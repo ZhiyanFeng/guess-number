@@ -1,6 +1,5 @@
 import React from 'react';
 import {View, Text, StyleSheet, FlatList, ListRenderItem} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 
 interface GuessNumber {
