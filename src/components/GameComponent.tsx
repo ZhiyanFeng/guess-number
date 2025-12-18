@@ -1,76 +1,81 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, Button, Keyboard} from 'react-native';
 import {generateRandomGuessNumber} from "../utils/random";
+import {GameProgress} from "../types/GameProgress";
 
 
 interface GameComponentProps {
     onConfirm: (inputNumber: string) => void;
-    onReset:()=> void;
-    onGuess:(guessNumber: number) => void;
+    onReset: () => void;
+    onGuess: (guessNumber: number) => void;
+    gameProgress: GameProgress;
 }
-function GameComponent({ onConfirm, onReset, onGuess}: GameComponentProps)
-{
+
+function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponentProps) {
     const [inputNumber, setInputNumber] = useState('');
     const [currentGuess, setCurrentGuess] = useState(0);
-    const handleReset = () =>{
+    const handleReset = () => {
         setInputNumber('');
         onReset();
     }
-    const handleConfirm = () =>{
+    const [min, setMin] = useState(0);
+    const [max, setMax] = useState(99);
+
+    const handleConfirm = () => {
         Keyboard.dismiss();
         onConfirm(inputNumber);
-        setInputNumber('');
         handleGuess();
     }
+    useEffect(() => {
+        onGuess(currentGuess);
+    }, [currentGuess]);
 
-    const handleGuess = () =>{
-        const newGuessNumber = generateRandomGuessNumber(1, 99);
-        setCurrentGuess(newGuessNumber);
-        onGuess(newGuessNumber);
+    const handleGuess = () => {
+        setCurrentGuess(generateRandomGuessNumber(min, max));
     }
-    const handleLowerGuess = () =>{
-        const newGuessNumber = (generateRandomGuessNumber(currentGuess, 99));
-        onGuess(newGuessNumber);
+    const handleLowerGuess = () => {
+        setMin(currentGuess + 1);
+        // onGuess(currentGuess);
     }
-    const handleHigherGuess = () =>{
-        const newGuessNumber = (generateRandomGuessNumber(1, currentGuess));
-        console.log(newGuessNumber);
-        setCurrentGuess(newGuessNumber);
-        onGuess(newGuessNumber);
+    const handleHigherGuess = () => {
+        setMax(currentGuess - 1)
+        setCurrentGuess(generateRandomGuessNumber(min, max));
+        // onGuess(currentGuess);
     }
-    if(currentGuess === 0){
+    if (gameProgress != GameProgress.GUESSING) {
+        return (
+            <View style={styles.container}>
+                <View>
+                    <Text style={styles.text}>Enter a Number</Text>
+                </View>
+                <TextInput style={styles.input} cursorColor='yellow'
+                           placeholderTextColor="yellow"
+                           onChangeText={setInputNumber}
+                           value={inputNumber}
+                />
+                <View style={styles.buttonLine}>
+                    <View style={styles.buttonContainer}>
+                        <Button color="#C71585" title="Reset" onPress={handleReset}/>
+                    </View>
+                    <View style={styles.buttonContainer}>
+                        <Button color="#C71585" title="Confirm" onPress={handleConfirm}/>
+                    </View>
+                </View>
+            </View>
+
+        );
+    }
     return (
         <View style={styles.container}>
-            <View >
-                <Text style={styles.text}>Enter a Number</Text>
-            </View>
-            <TextInput style={styles.input} cursorColor='yellow'
-                       placeholderTextColor="yellow"
-                       onChangeText={setInputNumber}
-                       value = {inputNumber}
-                       />
-            <View style={styles.buttonLine}>
-                <View style={styles.buttonContainer}>
-                    <Button color="#C71585" title="Reset" onPress={handleReset} />
-                </View>
-                <View style={styles.buttonContainer}>
-                    <Button color="#C71585" title="Confirm" onPress={handleConfirm} />
-                </View>
-            </View>
-        </View>
-
-    );}
-    return (
-        <View style={styles.container}>
-            <View >
+            <View>
                 <Text style={styles.text}>Higher or lower?</Text>
             </View>
             <View style={styles.buttonLine}>
                 <View style={styles.buttonContainer}>
-                    <Button color="#C71585" title="-" onPress={handleLowerGuess} />
+                    <Button color="#C71585" title="-" onPress={handleLowerGuess}/>
                 </View>
                 <View style={styles.buttonContainer}>
-                    <Button color="#C71585" title="+" onPress={handleHigherGuess} />
+                    <Button color="#C71585" title="+" onPress={handleHigherGuess}/>
                 </View>
             </View>
         </View>
@@ -93,7 +98,7 @@ const styles = StyleSheet.create({
         color: 'yellow'
 
     },
-    text:{
+    text: {
         fontSize: 18,
         color: 'white',
     },

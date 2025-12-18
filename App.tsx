@@ -1,11 +1,11 @@
-import { StatusBar } from 'expo-status-bar';
-import {ImageBackground, StyleSheet, Text, View} from 'react-native';
+import {StatusBar} from 'expo-status-bar';
+import {ImageBackground, StyleSheet, View} from 'react-native';
 import HeadComponent from "./src/components/HeadComponent";
 import GameComponent from "./src/components/GameComponent";
 import GuessNumberComponent from "./src/components/GuessNumberComponent";
 import ListGuessComponent from "./src/components/ListGuessComponent";
 import FootComponent from "./src/components/FootComponent";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {GameProgress} from "./src/types/GameProgress";
 
 function App() {
@@ -18,12 +18,16 @@ function App() {
     const [gameProgress, setGameProgress] = useState<GameProgress>(GameProgress.INPUTTING);
     const [inputNumber, setInputNumber] = useState('');
     const [guessNumbers, setGuessNumbers] = useState<guessNumber[]>([]);
-    const [guessing, setGuessing] = useState(false);
     const [currentGuess, setCurrentGuess] = useState(0);
 
+
     function updateInputNumber(input: string) {
+        console.log(guessNumbers);
         setInputNumber(inputNumber);
-        setGuessing(true);
+        updateGameProgress();
+    }
+    function updateGameProgress() {
+        setGameProgress(GameProgress.GUESSING);
     }
 
     function updateGuessNumber(newGuess: number): void {
@@ -51,16 +55,16 @@ function App() {
                     <HeadComponent progress={gameProgress} />
                 </View>
                 {
-                    currentGuess ? <View style={styles.guessNumberInfo}>
+                    gameProgress == GameProgress.GUESSING ? <View style={styles.guessNumberInfo}>
                         <GuessNumberComponent currentGuess={currentGuess}/>
                     </View> : null
                 }
                 <View style={styles.body}>
                     <GameComponent onConfirm={updateInputNumber} onReset={resetGame}
-                                   onGuess={updateGuessNumber}/>
+                                   onGuess={updateGuessNumber} gameProgress={gameProgress}/>
                 </View>
                 {
-                    guessNumbers.length > 0 ? <View style={styles.guessList}>
+                    gameProgress == GameProgress.GUESSING ? <View style={styles.guessList}>
                         <ListGuessComponent guessNumbers={guessNumbers}/></View> : null
                 }
                 <View style={styles.foot}>
@@ -93,6 +97,7 @@ const styles = StyleSheet.create({
     },
     guessList: {
         flex: 1,
+        alignSelf: 'flex-start',
         width: '100%',
     },
     foot: {
