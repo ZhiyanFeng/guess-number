@@ -1,7 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, Button, Keyboard} from 'react-native';
 import {generateRandomGuessNumber} from "../utils/random";
 import {GameProgress} from "../types/GameProgress";
+import guessNumberComponent from "./GuessNumberComponent";
 
 
 interface GameComponentProps {
@@ -14,6 +15,7 @@ interface GameComponentProps {
 function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponentProps) {
     const [inputNumber, setInputNumber] = useState('');
     const [currentGuess, setCurrentGuess] = useState(0);
+    const isInitialRender = useRef(true);
     const handleReset = () => {
         setInputNumber('');
         onReset();
@@ -27,6 +29,10 @@ function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponen
         handleGuess();
     }
     useEffect(() => {
+        if (isInitialRender.current) {
+              isInitialRender.current = false; // Set to false after the first run
+              return; // Skip the effect's logic for the initial render
+            }
         onGuess(currentGuess);
     }, [currentGuess]);
 
@@ -34,13 +40,14 @@ function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponen
         setCurrentGuess(generateRandomGuessNumber(min, max));
     }
     const handleLowerGuess = () => {
-        setMin(currentGuess + 1);
-        // onGuess(currentGuess);
+        const newMin = currentGuess + 1;
+        setMin(newMin);
+        setCurrentGuess(generateRandomGuessNumber(newMin, max));
     }
     const handleHigherGuess = () => {
-        setMax(currentGuess - 1)
-        setCurrentGuess(generateRandomGuessNumber(min, max));
-        // onGuess(currentGuess);
+        const newMax = currentGuess - 1;
+        setMax(prevState => prevState - 1);
+        setCurrentGuess(generateRandomGuessNumber(min, newMax));
     }
     if (gameProgress != GameProgress.GUESSING) {
         return (
@@ -62,7 +69,6 @@ function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponen
                     </View>
                 </View>
             </View>
-
         );
     }
     return (
@@ -87,6 +93,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#800000',
         alignItems: 'center',
+        borderRadius: 15,
         justifyContent: 'space-around',
     },
     input: {
@@ -111,6 +118,9 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         width: 100,
+    },
+    button: {
+        borderRadius: 20
     }
 });
 
