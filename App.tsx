@@ -103,13 +103,13 @@ const styles = StyleSheet.create({
             gap: 10
         },
         guessNumberInfo: {
-            flexBasis: 100, width: "90%", backgroundColor: "blue",
+            flexBasis: 100, width: "80%",
         },
         image: {
             flex: 1,
         },
         header: {
-            alignItems: "center", justifyContent: "center", width: '60%', flexBasis: 70, backgroundColor: 'green',
+            alignItems: "center", justifyContent: "center", width: '100%', flexBasis: 150,
         },
         gameBody: {
             width: '80%',
@@ -129,10 +129,7 @@ const styles = StyleSheet.create({
 
         guessList: {
             flexGrow: 1,
-            alignSelf:
-                'flex-start',
-            width:
-                '100%',
+            width: '90%',
         }
         ,
         foot: {
