@@ -1,12 +1,12 @@
 import {StatusBar} from 'expo-status-bar';
-import {ImageBackground, StyleSheet, View} from 'react-native';
+import {ImageBackground, Modal, Pressable, StyleSheet, Text, View} from 'react-native';
 import HeadComponent from "./src/components/HeadComponent";
 import GameComponent from "./src/components/GameComponent";
 import GuessNumberComponent from "./src/components/GuessNumberComponent";
 import ListGuessComponent from "./src/components/ListGuessComponent";
-import FootComponent from "./src/components/FootComponent";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {GameProgress} from "./src/types/GameProgress";
+import CustomButton from "./src/components/CustomButton";
 
 function App() {
     const backGroundImg = require("./assets/images/dice.jpg");
@@ -17,23 +17,24 @@ function App() {
     }
 
     const [gameProgress, setGameProgress] = useState<GameProgress>(GameProgress.INPUTTING);
-    const [inputNumber, setInputNumber] = useState('');
+    const [inputNumber, setInputNumber] = useState('100');
     const [guessNumbers, setGuessNumbers] = useState<guessNumber[]>([]);
     const [currentGuess, setCurrentGuess] = useState(0);
-    const isguess = true;
+    const [modalVisible, setModalVisible] = useState(false);
+    const [guessCount, setGuessCount] = useState(0);
 
 
     useEffect(() => {
-        console.log(guessNumbers);
-    }, [guessNumbers]);
+        console.log('Current guess',currentGuess);
+        console.log('Input number', inputNumber);
+        if(currentGuess === Number(inputNumber)){
+            setGameProgress(GameProgress.GAMEOVER);
+        }
+    }, [currentGuess]);
 
-    useEffect(() => {
-        console.log(gameProgress);
-    }, [gameProgress]);
 
     function updateInputNumber(input: string) {
-        console.log(guessNumbers);
-        setInputNumber(inputNumber);
+        setInputNumber(inputNumber=> input);
         updateGameProgress();
     }
 
@@ -50,12 +51,18 @@ function App() {
         const newGuessId = guessNumbers.length + 1;
         const newGuessNumber = {id: newGuessId, value: newGuess};
         setGuessNumbers(prevGuessNumbers => [newGuessNumber, ...guessNumbers]);
+        setGuessCount(prevState=>prevState +1);
     }
 
     function resetGame(): void {
         setGameProgress(GameProgress.INPUTTING);
-        setInputNumber('0');
+        setInputNumber('100');
         setGuessNumbers([]);
+        setGuessCount(0);
+        setCurrentGuess(0);
+    }
+    function changeModalVisible(isVisible:boolean): void {
+        setModalVisible(isVisible);
     }
 
     return (
@@ -76,16 +83,34 @@ function App() {
                 }
                 <View style={[styles.inputting, gameProgress==GameProgress.GUESSING && styles.guessing]}>
                     <GameComponent onConfirm={updateInputNumber} onReset={resetGame}
-                                   onGuess={updateGuessNumber} gameProgress={gameProgress}/>
+                                   onGuess={updateGuessNumber} gameProgress={gameProgress}
+                                   onDetectLie={changeModalVisible} guessCount={guessCount}/>
                 </View>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => {
+                        changeModalVisible(!modalVisible);
+                    }}>
+                    <View style={styles.centeredView}>
+                        <View style={styles.modalView}>
+                            <Text style={styles.modalText}>You are lying!</Text>
+                            <Pressable
+                                style={[styles.button, styles.buttonClose]}
+                                onPress={() => changeModalVisible(!modalVisible)}>
+                                <Text style={styles.textStyle}>X</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </Modal>
                 {
                     gameProgress == GameProgress.GUESSING ? <View style={styles.guessList}>
                         <ListGuessComponent guessNumbers={guessNumbers}/></View> : null
                 }
-                <View style={styles.foot}>
-                    <FootComponent/>
-                </View>
+
             </View>
+
             <StatusBar style="auto"/>
 
         </ImageBackground>
@@ -119,7 +144,8 @@ const styles = StyleSheet.create({
         inputting: {
             width: '80%',
             justifyContent: 'space-around',
-            flexBasis: 200,
+            height: 200,
+            flexBasis: 'auto',
         },
         guessing: {
             width: '80%',
@@ -134,7 +160,53 @@ const styles = StyleSheet.create({
         ,
         foot: {
             backgroundColor: 'red',
-        }
+        },
+    centeredView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    button: {
+        borderRadius: 20,
+        width: '40%',
+        flexBasis: "auto",
+        backgroundColor: '#eb4034'
+    },
+    text: {
+        fontSize: 18,
+        color: 'white',
+    },
+    buttonOpen: {
+        backgroundColor: '#F194FF',
+    },
+    buttonClose: {
+        backgroundColor: '#2196F3',
+    },
+
+    modalText: {
+        marginBottom: 15,
+        textAlign: 'center',
+    },
+    textStyle: {
+        color: 'white',
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
     })
 ;
 

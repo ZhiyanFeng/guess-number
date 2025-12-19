@@ -23,7 +23,7 @@ const HeadComponent = (props: HeadComponentProps )=>
                 <Text style={styles.text}>{info}</Text>
             </View>);
         }
-        if(props.progress == GameProgress.OVER){
+        if(props.progress == GameProgress.GAMEOVER){
             return ( <View style={styles.container3}>
                 <Text style={styles.text}>{info}</Text>
             </View>);

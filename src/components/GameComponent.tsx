@@ -1,8 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, Text, StyleSheet, TextInput, Button, Keyboard} from 'react-native';
+import {Keyboard, StyleSheet, Text, TextInput, View, Image} from 'react-native';
 import {generateRandomGuessNumber} from "../utils/random";
 import {GameProgress} from "../types/GameProgress";
-import guessNumberComponent from "./GuessNumberComponent";
 import CustomButton from "./CustomButton";
 
 
@@ -10,12 +9,14 @@ interface GameComponentProps {
     onConfirm: (inputNumber: string) => void;
     onReset: () => void;
     onGuess: (guessNumber: number) => void;
+    onDetectLie: (isVisible: boolean) => void;
     gameProgress: GameProgress;
+    guessCount: number;
 }
 
-function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponentProps) {
-    const [inputNumber, setInputNumber] = useState('');
+function GameComponent({onConfirm, onReset, onGuess, onDetectLie, gameProgress, guessCount}: GameComponentProps) {
     const [currentGuess, setCurrentGuess] = useState(0);
+    const [inputNumber, setInputNumber] = useState('');
     const isInitialRender = useRef(true);
     const handleReset = () => {
         setInputNumber('');
@@ -23,6 +24,7 @@ function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponen
     }
     const [min, setMin] = useState(0);
     const [max, setMax] = useState(99);
+    const gameOverImage = require('../../assets/smile.jpg');
 
     const handleConfirm = () => {
         Keyboard.dismiss();
@@ -31,9 +33,9 @@ function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponen
     }
     useEffect(() => {
         if (isInitialRender.current) {
-              isInitialRender.current = false; // Set to false after the first run
-              return; // Skip the effect's logic for the initial render
-            }
+            isInitialRender.current = false; // Set to false after the first run
+            return; // Skip the effect's logic for the initial render
+        }
         onGuess(currentGuess);
     }, [currentGuess]);
 
@@ -41,16 +43,24 @@ function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponen
         setCurrentGuess(generateRandomGuessNumber(min, max));
     }
     const handleLowerGuess = () => {
-        const newMin = currentGuess + 1;
+        if (currentGuess > Number(inputNumber)) {
+            onDetectLie(true);
+            return;
+        }
+        const newMin = currentGuess > min ? currentGuess + 1 : min;
         setMin(newMin);
         setCurrentGuess(generateRandomGuessNumber(newMin, max));
     }
     const handleHigherGuess = () => {
-        const newMax = currentGuess - 1;
-        setMax(prevState => prevState - 1);
+        if (currentGuess < Number(inputNumber)) {
+            onDetectLie(true);
+            return;
+        }
+        const newMax = currentGuess < max ? currentGuess - 1 : max;
+        setMax(newMax);
         setCurrentGuess(generateRandomGuessNumber(min, newMax));
     }
-    if (gameProgress != GameProgress.GUESSING) {
+    if (gameProgress == GameProgress.INPUTTING) {
         return (
             <View style={styles.container}>
                 <View>
@@ -63,32 +73,44 @@ function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponen
                 />
                 <View style={styles.buttonLine}>
                     <CustomButton title="Reset" onPress={handleReset} style={styles.button} textStyle={styles.text}/>
-                    <CustomButton title="Confirm" onPress={handleConfirm} style={styles.button} textStyle={styles.text}/>
-
-                    {/*<View style={styles.buttonContainer}>*/}
-                    {/*    <Button color="#C71585" title="Reset" onPress={handleReset}/>*/}
-                    {/*</View>*/}
-                    {/*<View style={styles.buttonContainer}>*/}
-                    {/*    <Button color="#C71585" title="Confirm" onPress={handleConfirm}/>*/}
-                    {/*</View>*/}
+                    <CustomButton title="Confirm" onPress={handleConfirm} style={styles.button}
+                                  textStyle={styles.text}/>
                 </View>
             </View>
         );
     }
-    return (
-        <View style={styles.container}>
-            <View>
-                <Text style={styles.text}>Higher or lower?</Text>
+    if (gameProgress == GameProgress.GUESSING) {
+        return (
+            <View style={styles.container}>
+                <View>
+                    <Text style={styles.text}>Higher or lower?</Text>
+                </View>
+                <View style={styles.buttonLine}>
+                    <CustomButton title="-" onPress={handleLowerGuess} style={styles.button} textStyle={styles.text}/>
+                    <CustomButton title="+" onPress={handleHigherGuess} style={styles.button} textStyle={styles.text}/>
+                </View>
             </View>
-            <View style={styles.buttonLine}>
-                <CustomButton title="-" onPress={handleLowerGuess} style={styles.button} textStyle={styles.text}/>
-                <CustomButton title="-" onPress={handleLowerGuess} style={styles.button} textStyle={styles.text}/>
 
+        );
+    }
+    if (gameProgress == GameProgress.GAMEOVER) {
+        return (
+            <View style={styles.gameOverContainer}>
+                <Image source={gameOverImage}/>
+                <View>
+                    <Text style={styles.textStyle}>Your phone needed {guessCount} rounds
+                        to guess the number {inputNumber}</Text>
 
+                </View>
+                <View>
+                    <CustomButton title="Start New Game" onPress={handleReset} style={styles.button}
+                                  textStyle={styles.text}/>
+                </View>
             </View>
-        </View>
-    )
-};
+        );
+    }
+
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -97,6 +119,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 15,
         justifyContent: 'space-around',
+    },
+    gameOverContainer: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flex: 1,
     },
     input: {
         width: 70,
@@ -126,7 +154,13 @@ const styles = StyleSheet.create({
         width: '40%',
         flexBasis: "auto",
         backgroundColor: '#eb4034'
-    }
+    },
+    textStyle: {
+        color: "white",
+        fontWeight: 'bold',
+        fontSize: 30,
+        textAlign: 'center',
+    },
 });
 
 export default GameComponent;
