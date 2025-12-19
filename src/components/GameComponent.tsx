@@ -3,6 +3,7 @@ import {View, Text, StyleSheet, TextInput, Button, Keyboard} from 'react-native'
 import {generateRandomGuessNumber} from "../utils/random";
 import {GameProgress} from "../types/GameProgress";
 import guessNumberComponent from "./GuessNumberComponent";
+import CustomButton from "./CustomButton";
 
 
 interface GameComponentProps {
@@ -61,12 +62,15 @@ function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponen
                            value={inputNumber}
                 />
                 <View style={styles.buttonLine}>
-                    <View style={styles.buttonContainer}>
-                        <Button color="#C71585" title="Reset" onPress={handleReset}/>
-                    </View>
-                    <View style={styles.buttonContainer}>
-                        <Button color="#C71585" title="Confirm" onPress={handleConfirm}/>
-                    </View>
+                    <CustomButton title="Reset" onPress={handleReset} style={styles.button} textStyle={styles.text}/>
+                    <CustomButton title="Confirm" onPress={handleConfirm} style={styles.button} textStyle={styles.text}/>
+
+                    {/*<View style={styles.buttonContainer}>*/}
+                    {/*    <Button color="#C71585" title="Reset" onPress={handleReset}/>*/}
+                    {/*</View>*/}
+                    {/*<View style={styles.buttonContainer}>*/}
+                    {/*    <Button color="#C71585" title="Confirm" onPress={handleConfirm}/>*/}
+                    {/*</View>*/}
                 </View>
             </View>
         );
@@ -77,12 +81,10 @@ function GameComponent({onConfirm, onReset, onGuess, gameProgress}: GameComponen
                 <Text style={styles.text}>Higher or lower?</Text>
             </View>
             <View style={styles.buttonLine}>
-                <View style={styles.buttonContainer}>
-                    <Button color="#C71585" title="-" onPress={handleLowerGuess}/>
-                </View>
-                <View style={styles.buttonContainer}>
-                    <Button color="#C71585" title="+" onPress={handleHigherGuess}/>
-                </View>
+                <CustomButton title="-" onPress={handleLowerGuess} style={styles.button} textStyle={styles.text}/>
+                <CustomButton title="-" onPress={handleLowerGuess} style={styles.button} textStyle={styles.text}/>
+
+
             </View>
         </View>
     )
@@ -120,7 +122,10 @@ const styles = StyleSheet.create({
         width: 100,
     },
     button: {
-        borderRadius: 20
+        borderRadius: 20,
+        width: '40%',
+        flexBasis: "auto",
+        backgroundColor: '#eb4034'
     }
 });
 
